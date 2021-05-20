@@ -12,13 +12,41 @@ var app = express();
 // app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+//https://api.nasa.gov/planetary/apod?api_key=Mb6N3pcw8ifB2msXOe7CBgnwGcszpq2og0pfs5py
 let api_url = "https://api.nasa.gov/planetary/apod?api_key=";
 let api_key = "Mb6N3pcw8ifB2msXOe7CBgnwGcszpq2og0pfs5py"
 let api = api_url+api_key;
 
 app.get('/', (req, res) => {
-    res.send(frontEnd());
-})
+
+    res.send(frontEnd({ }));
+});
+
+app.post('/', (req, res) => {
+    res.redirect('/');
+});
+
+app.post('/dateCheck', (req, res) => {
+    var date = req.body.Date;
+    var newdate = date.split("-").reverse().join("-");
+
+    https.get(api+"&date="+date, (resp, req) => {
+        if(resp.statusCode == 400){
+            let data="";
+
+            resp.on("data", (chunk) => {
+                data+=chunk;
+            });
+
+            resp.on("end", () => {
+                let message = JSON.parse(data).msg;
+                res.send(frontEnd({ message }));
+            });
+        } else {
+            res.redirect(307 ,'/showData');
+        }
+    });
+});
 
 app.post('/showData', (req, res) => {
 
@@ -26,6 +54,7 @@ app.post('/showData', (req, res) => {
     var newdate = date.split("-").reverse().join("-");
 
     https.get(api+"&date="+date, (resp, req) => {
+
         let data="";
             
         resp.on("data", chunk => {
@@ -33,7 +62,7 @@ app.post('/showData', (req, res) => {
         });
     
         resp.on("end", () => {
-            let pic_date = newdate;
+            let pic_date = (JSON.parse(data).date).split("-").reverse().join("-");
             let expain = JSON.parse(data).explanation;
             let hdurl = JSON.parse(data).hdurl;
             let url = JSON.parse(data).url;
@@ -55,17 +84,15 @@ app.post('/showData', (req, res) => {
     
                     res.on("end", () => {
                         let fileName = __dirname+"/apod.jpg";
-                        // console.log("Directory: "+__dirname);
                         fs.writeFileSync(fileName, img.read());
                     });
                 }
             })
-                .on("error", err => {
-                    console.log("Error: "+err.message);
-                });
+            .on("error", err => {
+                console.log("Error: "+err.message);
+            });
 
             
-
             if(url.includes("youtube")){
                 console.log("URL: "+url);
                 flag=1;

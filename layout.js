@@ -73,7 +73,7 @@ module.exports = ({ content }) => {
         </style>
     </head>
     <body>
-        <form action="/">
+        <form method="POST" action="/">
             <h1 align="center">NASA Astronomy Picture Of The Day</h1>
             
             ${content}
@@ -83,7 +83,7 @@ module.exports = ({ content }) => {
         </form>
         
         <h2 align="center">Check for another day</h2>
-        <form method="POST" align="center" action="/showData">
+        <form method="POST" align="center" action="/dateCheck">
             <label>Enter Date: </label>
             <input type="date" name="Date">
             <br><br>
